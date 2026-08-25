@@ -44,10 +44,11 @@ npm run dev
 | `npm run build`                | Production build to `./dist/`                           |
 | `npm run preview`              | Preview the production build locally                    |
 | `npm run check`                 | Astro type/content check                                 |
-| `npm test`                       | Vitest unit tests                                          |
+| `npm test`                       | Vitest unit tests (`src/**/*.test.ts`)                     |
 | `npm run check:links`             | Crawl the built site for broken internal links and stray private-repo URLs |
+| `npm run test:e2e`                 | Playwright smoke tests + axe accessibility scan (`tests/**/*.spec.ts`), desktop + mobile |
 | `npm run generate:og-image`        | Regenerate `public/og-image.png` from `scripts/og-image.svg` |
-| `npm run validate`                    | `check` + `build` + `test` + `check:links`, in that order |
+| `npm run validate`                    | `check` + `build` + `test` + `check:links` + `test:e2e`, in that order |
 
 ## Architecture
 
@@ -105,7 +106,11 @@ npm run dev
   only updates on meaningful step changes.
 - No horizontal overflow at common mobile/tablet/desktop widths — wide
   content (like the architecture page's process-topology diagram) scrolls
-  in its own container instead of the page.
+  in its own focusable, labeled region (`tabindex="0"`, `role="region"`)
+  instead of the page.
+- All of the above is regression-tested by `npm run test:e2e`: an axe-core
+  scan of every route on both a desktop and a mobile viewport, plus a
+  keyboard-only run through the entire interactive demo.
 
 ## Production build
 
@@ -118,8 +123,8 @@ npm run preview   # serve dist/ locally to sanity-check before deploying
 
 See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for the actual hosting setup
 (Cloudflare Pages, connected to this GitHub repo) and the production
-security headers this site should have — most of which are **not yet
-active** and need host-side configuration.
+security headers, which are live via `public/_headers` (Cloudflare Pages'
+native mechanism — verified with `curl -I https://buildwithai.in/`).
 
 ## What is intentionally private
 
