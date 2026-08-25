@@ -5,8 +5,7 @@ export const siteConfig = {
   description:
     "Build With AI is Pushpendra Singh's engineering studio — practical, human-supervised AI products built for real workflows. Flagship project: AI Job Agent.",
   githubUrl: "https://github.com/pushpendra-devera",
-  // TODO: confirm real LinkedIn profile URL before publishing.
-  linkedinUrl: "",
+  linkedinUrl: "https://www.linkedin.com/in/pushpendra-singh-devera/",
   contactEmail: "pushpendra.devera@gmail.com",
   nav: [
     { label: "AI Job Agent", href: "/projects/ai-job-agent" },
