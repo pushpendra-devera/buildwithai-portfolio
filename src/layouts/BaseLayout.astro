@@ -7,9 +7,10 @@ import "../styles/global.css";
 interface Props {
   title: string;
   description?: string;
+  structuredData?: Record<string, unknown>;
 }
 
-const { title, description = siteConfig.description } = Astro.props;
+const { title, description = siteConfig.description, structuredData } = Astro.props;
 const pageTitle = `${title} · ${siteConfig.brand}`;
 const ogImageUrl = new URL("/og-image.png", Astro.site);
 ---
@@ -43,6 +44,15 @@ const ogImageUrl = new URL("/og-image.png", Astro.site);
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
+
+    {
+      structuredData && (
+        <script
+          type="application/ld+json"
+          set:html={JSON.stringify(structuredData)}
+        />
+      )
+    }
   </head>
   <body class="bg-graphite-950 min-h-screen antialiased">
     <Header />

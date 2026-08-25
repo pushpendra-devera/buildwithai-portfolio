@@ -50,11 +50,34 @@ const lessons = [
   "Dependable agent behavior comes from explicit boundaries (typed state transitions, deterministic policy, process isolation) more than from a better prompt.",
   "Conservative capability labeling matters: a platform with implemented form-filling but no live validation is marked experimental, not fully supported.",
 ];
+
+const description =
+  "A local-first desktop agent that discovers, evaluates, tailors, and assists job applications — without submitting anything behind the applicant's back.";
+
+const softwareApplicationSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "AI Job Agent",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Windows, macOS, Linux",
+  description,
+  softwareVersion: "1.0.0-beta.2",
+  url: "https://buildwithai.in/projects/ai-job-agent",
+  codeRepository: "https://github.com/pushpendra-devera/ai-job-agent",
+  programmingLanguage: "TypeScript",
+  author: {
+    "@type": "Person",
+    name: siteConfig.author,
+    url: siteConfig.linkedinUrl,
+  },
+  sameAs: ["https://github.com/pushpendra-devera/ai-job-agent"],
+};
 ---
 
 <BaseLayout
   title="AI Job Agent"
-  description="A local-first desktop agent that discovers, evaluates, tailors, and assists job applications — without submitting anything behind the applicant's back."
+  description={description}
+  structuredData={softwareApplicationSchema}
 >
   <main class="bg-grid">
     <!-- 1 & 2: Problem + Product -->
