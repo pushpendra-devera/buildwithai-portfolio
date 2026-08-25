@@ -1,5 +1,8 @@
 ---
 import { siteConfig } from "../config";
+
+const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/";
+const isActive = (href: string) => currentPath === href.replace(/\/$/, "");
 ---
 
 <header class="relative border-b border-graphite-700/80">
@@ -14,10 +17,17 @@ import { siteConfig } from "../config";
         class="text-paper-500">.in</span
       >
     </a>
-    <nav class="hidden gap-6 text-sm text-paper-300 sm:flex">
+    <nav aria-label="Primary" class="hidden gap-6 text-sm text-paper-300 sm:flex">
       {
         siteConfig.nav.map((item) => (
-          <a href={item.href} class="transition-colors hover:text-cyan-400">
+          <a
+            href={item.href}
+            aria-current={isActive(item.href) ? "page" : undefined}
+            class:list={[
+              "transition-colors hover:text-cyan-400",
+              isActive(item.href) && "text-cyan-400",
+            ]}
+          >
             {item.label}
           </a>
         ))
@@ -39,6 +49,7 @@ import { siteConfig } from "../config";
         stroke="currentColor"
         stroke-width="1.8"
         class="h-5 w-5"
+        aria-hidden="true"
       >
         <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
       </svg>
@@ -50,6 +61,7 @@ import { siteConfig } from "../config";
         stroke="currentColor"
         stroke-width="1.8"
         class="hidden h-5 w-5"
+        aria-hidden="true"
       >
         <path stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />
       </svg>
@@ -57,13 +69,18 @@ import { siteConfig } from "../config";
   </div>
   <nav
     id="mobile-nav"
+    aria-label="Primary, mobile"
     class="hidden flex-col gap-1 border-t border-graphite-700/80 px-6 py-3 text-sm text-paper-300 sm:hidden"
   >
     {
       siteConfig.nav.map((item) => (
         <a
           href={item.href}
-          class="rounded-md px-2 py-2.5 transition-colors hover:bg-graphite-800 hover:text-cyan-400"
+          aria-current={isActive(item.href) ? "page" : undefined}
+          class:list={[
+            "rounded-md px-2 py-2.5 transition-colors hover:bg-graphite-800 hover:text-cyan-400",
+            isActive(item.href) && "text-cyan-400",
+          ]}
         >
           {item.label}
         </a>
@@ -73,27 +90,44 @@ import { siteConfig } from "../config";
 </header>
 
 <script>
-  const toggle = document.getElementById("nav-toggle");
+  const toggle = document.getElementById("nav-toggle") as HTMLButtonElement | null;
   const menu = document.getElementById("mobile-nav");
   const iconOpen = document.getElementById("nav-icon-open");
   const iconClose = document.getElementById("nav-icon-close");
 
+  function isMenuOpen() {
+    return !menu?.classList.contains("hidden");
+  }
+
+  function openMenu() {
+    menu?.classList.remove("hidden");
+    menu?.classList.add("flex");
+    iconOpen?.classList.add("hidden");
+    iconClose?.classList.remove("hidden");
+    toggle?.setAttribute("aria-expanded", "true");
+  }
+
+  function closeMenu({ returnFocus = false } = {}) {
+    menu?.classList.add("hidden");
+    menu?.classList.remove("flex");
+    iconOpen?.classList.remove("hidden");
+    iconClose?.classList.add("hidden");
+    toggle?.setAttribute("aria-expanded", "false");
+    if (returnFocus) toggle?.focus();
+  }
+
   toggle?.addEventListener("click", () => {
-    const isOpen = !menu?.classList.contains("hidden");
-    menu?.classList.toggle("hidden");
-    menu?.classList.toggle("flex");
-    iconOpen?.classList.toggle("hidden");
-    iconClose?.classList.toggle("hidden");
-    toggle.setAttribute("aria-expanded", String(!isOpen));
+    if (isMenuOpen()) closeMenu();
+    else openMenu();
   });
 
   menu?.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", () => {
-      menu.classList.add("hidden");
-      menu.classList.remove("flex");
-      iconOpen?.classList.remove("hidden");
-      iconClose?.classList.add("hidden");
-      toggle?.setAttribute("aria-expanded", "false");
-    });
+    link.addEventListener("click", () => closeMenu());
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && isMenuOpen()) {
+      closeMenu({ returnFocus: true });
+    }
   });
 </script>

@@ -9,7 +9,12 @@ const site = "https://buildwithai.in";
 // https://astro.build/config
 export default defineConfig({
   site,
-  integrations: [mdx(), sitemap()],
+  integrations: [
+    mdx(),
+    sitemap({
+      filter: (page) => !page.endsWith("/404/") && !page.endsWith("/404"),
+    }),
+  ],
   vite: {
     plugins: [tailwindcss()],
   },

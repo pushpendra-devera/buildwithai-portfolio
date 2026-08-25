@@ -1,6 +1,9 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { siteConfig } from "../../config";
+import { siteConfig, projects } from "../../config";
+import { isPublicLink, sourceCta } from "../../lib/links";
+
+const sourceLink = sourceCta(projects.aiJobAgent.sourceUrl);
 
 const pipeline = [
   "Discover",
@@ -16,7 +19,7 @@ const pipeline = [
 const platformSupport = [
   { name: "Greenhouse", status: "Form filling, live-validated" },
   { name: "Lever", status: "Form filling, live-validated" },
-  { name: "Ashby", status: "Form filling" },
+  { name: "Ashby", status: "Form filling (implemented)" },
   { name: "SmartRecruiters", status: "Form filling (experimental)" },
   { name: "Jobvite", status: "Form filling (experimental)" },
   { name: "Workday", status: "Discovery" },
@@ -29,8 +32,8 @@ const safety = [
   "The renderer process has no Node.js, filesystem, or credential access; a narrow typed bridge is the only path to the main process.",
   "Background workers (discovery, run execution, assisted-apply sessions, Naukri handoff) run isolated, so a crash in one doesn't take the app down.",
   "CAPTCHA and MFA are never automated or bypassed — those steps stay in the applicant's hands.",
-  "Nothing clicks Submit. ATS adapters have no submit method; a separate human confirmation records that a submission happened.",
-  "Browser sessions and cookies stay on the applicant's device and are discarded per-application, including on failure paths.",
+  "Nothing clicks Submit. ATS adapters have no submit method; a separate human confirmation records that a submission happened after the applicant does it themselves.",
+  "Standard ATS applications get a fresh browser context per application, discarded afterward, including on failure paths. Naukri assisted handoff is the deliberate exception — a durable, leased profile survives across applications, guarded by a single-holder lease rather than per-application isolation.",
 ];
 
 const engineering = [
@@ -46,7 +49,7 @@ const engineering = [
 
 const lessons = [
   "Stale DOM selectors on real ATS forms break silently — verification has to re-read filled values after the form settles, not just trust the write.",
-  "Browser profile locking on the Naukri handoff needed explicit session isolation per application, not a single shared profile.",
+  "The Naukri handoff needed the opposite of per-application isolation — a durable, leased browser profile, since a login session has to survive across applications; a single-holder lease prevents two applications from fighting over it.",
   "Dependable agent behavior comes from explicit boundaries (typed state transitions, deterministic policy, process isolation) more than from a better prompt.",
   "Conservative capability labeling matters: a platform with implemented form-filling but no live validation is marked experimental, not fully supported.",
 ];
@@ -60,17 +63,15 @@ const softwareApplicationSchema = {
   name: "AI Job Agent",
   applicationCategory: "BusinessApplication",
   operatingSystem: "Windows, macOS, Linux",
-  description,
-  softwareVersion: "1.0.0-beta.2",
+  description: `${description} AI Job Agent's implementation repository is private; this page is a public portfolio case study describing its architecture and design decisions, not a link to its source.`,
+  softwareVersion: projects.aiJobAgent.version,
   url: "https://buildwithai.in/projects/ai-job-agent",
-  codeRepository: "https://github.com/pushpendra-devera/ai-job-agent",
   programmingLanguage: "TypeScript",
   author: {
     "@type": "Person",
     name: siteConfig.author,
     url: siteConfig.linkedinUrl,
   },
-  sameAs: ["https://github.com/pushpendra-devera/ai-job-agent"],
 };
 ---
 
@@ -79,7 +80,7 @@ const softwareApplicationSchema = {
   description={description}
   structuredData={softwareApplicationSchema}
 >
-  <main class="bg-grid">
+  <main id="main-content" class="bg-grid">
     <!-- 1 & 2: Problem + Product -->
     <section class="mx-auto max-w-3xl px-6 pb-14 pt-16 sm:pt-24">
       <p class="font-mono-tight text-xs text-cyan-400">Flagship project</p>
@@ -97,20 +98,27 @@ const softwareApplicationSchema = {
       </p>
       <div class="mt-8 flex flex-wrap gap-3">
         <a
-          href={siteConfig.githubUrl.replace(
-            "pushpendra-devera",
-            "pushpendra-devera/ai-job-agent",
-          )}
+          href="/demo/ai-job-agent"
           class="rounded-md bg-cyan-500 px-5 py-2.5 text-sm font-medium text-graphite-950 transition-colors hover:bg-cyan-400"
         >
-          View source on GitHub
+          Try the interactive demo
         </a>
         <a
           href="/architecture"
           class="rounded-md border border-graphite-600 px-5 py-2.5 text-sm font-medium text-paper-100 transition-colors hover:border-cyan-500 hover:text-cyan-400"
         >
-          Read the architecture
+          Explore the architecture
         </a>
+        {
+          sourceLink && (
+            <a
+              href={sourceLink.href}
+              class="rounded-md border border-graphite-600 px-5 py-2.5 text-sm font-medium text-paper-100 transition-colors hover:border-cyan-500 hover:text-cyan-400"
+            >
+              {sourceLink.label}
+            </a>
+          )
+        }
       </div>
     </section>
 
@@ -287,17 +295,21 @@ const softwareApplicationSchema = {
       <div class="mx-auto max-w-4xl px-6 text-center">
         <div class="flex flex-wrap justify-center gap-3">
           <a
-            href="https://github.com/pushpendra-devera/ai-job-agent"
-            class="rounded-md bg-cyan-500 px-5 py-2.5 text-sm font-medium text-graphite-950 transition-colors hover:bg-cyan-400"
-          >
-            View GitHub
-          </a>
-          <a
             href="/architecture"
-            class="rounded-md border border-graphite-600 px-5 py-2.5 text-sm font-medium text-paper-100 transition-colors hover:border-cyan-500 hover:text-cyan-400"
+            class="rounded-md bg-cyan-500 px-5 py-2.5 text-sm font-medium text-graphite-950 transition-colors hover:bg-cyan-400"
           >
             Read architecture
           </a>
+          {
+            !sourceLink && isPublicLink(siteConfig.githubUrl) && (
+              <a
+                href={siteConfig.githubUrl}
+                class="rounded-md border border-graphite-600 px-5 py-2.5 text-sm font-medium text-paper-100 transition-colors hover:border-cyan-500 hover:text-cyan-400"
+              >
+                GitHub profile
+              </a>
+            )
+          }
           <a
             href="/contact"
             class="rounded-md border border-graphite-600 px-5 py-2.5 text-sm font-medium text-paper-100 transition-colors hover:border-cyan-500 hover:text-cyan-400"

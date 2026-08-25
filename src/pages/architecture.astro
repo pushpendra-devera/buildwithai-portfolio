@@ -34,7 +34,7 @@ const safetyControls = [
   "No automatic submission, ever. ATS adapters have no submit method; a separate, explicit action records that a human submitted.",
   "Bounded blast radius — a hard cap on applications per run, and a retry limit for failures.",
   "Destination allowlisting — only absolute HTTPS URLs on approved ATS hosts, validated before navigation and again after redirects settle.",
-  "Per-application browser isolation — a fresh context per application; cookies, storage, and cache are discarded afterward, including on failure paths.",
+  "Per-application browser isolation for standard ATS applications — a fresh context per application; cookies, storage, and cache are discarded afterward, including on failure paths. Naukri assisted handoff is the deliberate exception: it holds a single, leased persistent profile (a login session has to survive across applications), guarded by a single-holder lease rather than per-application isolation.",
   "Fail closed on unknown platforms — an unrecognized ATS hands back to manual application rather than attempting a best-effort fill.",
   "Post-fill verification — field values are re-read after the form settles, so a write that silently reverted is never reported as filled.",
   "No CAPTCHA/MFA/anti-bot bypass — no login automation, stealth fingerprinting, or anti-bot evasion exists in the codebase.",
@@ -55,7 +55,7 @@ const testingGates = [
   title="Architecture"
   description="Engineering deep-dive for AI Job Agent — process topology, privacy boundaries, and the testing gates behind human-controlled submission."
 >
-  <main class="bg-grid">
+  <main id="main-content" class="bg-grid">
     <section class="mx-auto max-w-3xl px-6 pb-6 pt-16 sm:pt-20">
       <p class="font-mono-tight text-xs text-cyan-400">Engineering deep-dive</p>
       <h1
@@ -211,10 +211,10 @@ const testingGates = [
       <div class="mx-auto max-w-3xl px-6 text-center">
         <div class="flex flex-wrap justify-center gap-3">
           <a
-            href="https://github.com/pushpendra-devera/ai-job-agent"
+            href="/projects/ai-job-agent"
             class="rounded-md bg-cyan-500 px-5 py-2.5 text-sm font-medium text-graphite-950 transition-colors hover:bg-cyan-400"
           >
-            View source on GitHub
+            Read the case study
           </a>
           <a
             href="/changelog"

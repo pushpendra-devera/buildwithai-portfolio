@@ -8,9 +8,15 @@ interface Props {
   title: string;
   description?: string;
   structuredData?: Record<string, unknown>;
+  noindex?: boolean;
 }
 
-const { title, description = siteConfig.description, structuredData } = Astro.props;
+const {
+  title,
+  description = siteConfig.description,
+  structuredData,
+  noindex = false,
+} = Astro.props;
 const pageTitle = `${title} · ${siteConfig.brand}`;
 const ogImageUrl = new URL("/og-image.png", Astro.site);
 ---
@@ -23,7 +29,13 @@ const ogImageUrl = new URL("/og-image.png", Astro.site);
     <meta name="generator" content={Astro.generator} />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+    {
+      noindex ? (
+        <meta name="robots" content="noindex, nofollow" />
+      ) : (
+        <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+      )
+    }
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={siteConfig.brand} />
@@ -38,23 +50,18 @@ const ogImageUrl = new URL("/og-image.png", Astro.site);
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
-
     {
       structuredData && (
         <script
           type="application/ld+json"
+          is:inline
           set:html={JSON.stringify(structuredData)}
         />
       )
     }
   </head>
   <body class="bg-graphite-950 min-h-screen antialiased">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <Header />
     <slot />
     <Footer />

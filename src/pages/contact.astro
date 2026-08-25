@@ -1,13 +1,20 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { siteConfig } from "../config";
+import { isPublicLink } from "../lib/links";
+
+const hasAnyLink =
+  isPublicLink(siteConfig.contactEmail) ||
+  isPublicLink(siteConfig.githubUrl) ||
+  isPublicLink(siteConfig.linkedinUrl) ||
+  isPublicLink(siteConfig.resumeUrl);
 ---
 
 <BaseLayout
   title="Contact"
   description="Get in touch with Pushpendra Singh — GitHub, email, and LinkedIn."
 >
-  <main class="bg-grid">
+  <main id="main-content" class="bg-grid">
     <section class="mx-auto max-w-2xl px-6 py-16 sm:py-24">
       <h1 class="text-3xl font-semibold tracking-tight text-paper-50">
         Contact
@@ -15,25 +22,54 @@ import { siteConfig } from "../config";
       <p class="mt-6 text-paper-300">
         The best way to reach me is email. I read everything that comes in.
       </p>
+      {
+        !hasAnyLink && (
+          <p class="mt-6 text-sm text-paper-500">
+            No contact methods are configured yet.
+          </p>
+        )
+      }
       <div class="mt-8 space-y-3">
-        <a
-          href={`mailto:${siteConfig.contactEmail}`}
-          class="block rounded-md border border-graphite-700 px-4 py-3 text-paper-100 hover:border-cyan-500 hover:text-cyan-400"
-        >
-          {siteConfig.contactEmail}
-        </a>
-        <a
-          href={siteConfig.githubUrl}
-          class="block rounded-md border border-graphite-700 px-4 py-3 text-paper-100 hover:border-cyan-500 hover:text-cyan-400"
-        >
-          GitHub — {siteConfig.githubUrl.replace("https://", "")}
-        </a>
-        <a
-          href={siteConfig.linkedinUrl}
-          class="block rounded-md border border-graphite-700 px-4 py-3 text-paper-100 hover:border-cyan-500 hover:text-cyan-400"
-        >
-          LinkedIn — {siteConfig.linkedinUrl.replace("https://www.", "")}
-        </a>
+        {
+          isPublicLink(siteConfig.contactEmail) && (
+            <a
+              href={`mailto:${siteConfig.contactEmail}`}
+              class="block rounded-md border border-graphite-700 px-4 py-3 text-paper-100 hover:border-cyan-500 hover:text-cyan-400"
+            >
+              {siteConfig.contactEmail}
+            </a>
+          )
+        }
+        {
+          isPublicLink(siteConfig.githubUrl) && (
+            <a
+              href={siteConfig.githubUrl}
+              class="block rounded-md border border-graphite-700 px-4 py-3 text-paper-100 hover:border-cyan-500 hover:text-cyan-400"
+            >
+              GitHub — {siteConfig.githubUrl.replace("https://", "")}
+            </a>
+          )
+        }
+        {
+          isPublicLink(siteConfig.linkedinUrl) && (
+            <a
+              href={siteConfig.linkedinUrl}
+              class="block rounded-md border border-graphite-700 px-4 py-3 text-paper-100 hover:border-cyan-500 hover:text-cyan-400"
+            >
+              LinkedIn — {siteConfig.linkedinUrl.replace("https://www.", "")}
+            </a>
+          )
+        }
+        {
+          isPublicLink(siteConfig.resumeUrl) && (
+            <a
+              href={siteConfig.resumeUrl}
+              class="block rounded-md border border-graphite-700 px-4 py-3 text-paper-100 hover:border-cyan-500 hover:text-cyan-400"
+            >
+              Resume
+            </a>
+          )
+        }
       </div>
     </section>
   </main>

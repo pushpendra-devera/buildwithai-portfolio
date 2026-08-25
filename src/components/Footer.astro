@@ -1,5 +1,6 @@
 ---
 import { siteConfig } from "../config";
+import { isPublicLink } from "../lib/links";
 const year = new Date().getFullYear();
 ---
 
@@ -10,12 +11,31 @@ const year = new Date().getFullYear();
     <p>
       © {year} {siteConfig.author} · Build With AI
     </p>
-    <div class="flex gap-5">
-      <a href={siteConfig.githubUrl} class="hover:text-cyan-400">GitHub</a>
-      <a href={siteConfig.linkedinUrl} class="hover:text-cyan-400">LinkedIn</a>
-      <a href={`mailto:${siteConfig.contactEmail}`} class="hover:text-cyan-400"
-        >Email</a
-      >
+    <div class="flex flex-wrap gap-5">
+      {
+        isPublicLink(siteConfig.githubUrl) && (
+          <a href={siteConfig.githubUrl} class="hover:text-cyan-400">
+            GitHub
+          </a>
+        )
+      }
+      {
+        isPublicLink(siteConfig.linkedinUrl) && (
+          <a href={siteConfig.linkedinUrl} class="hover:text-cyan-400">
+            LinkedIn
+          </a>
+        )
+      }
+      {
+        isPublicLink(siteConfig.contactEmail) && (
+          <a
+            href={`mailto:${siteConfig.contactEmail}`}
+            class="hover:text-cyan-400"
+          >
+            Email
+          </a>
+        )
+      }
       <a href="/changelog" class="hover:text-cyan-400">Changelog</a>
       <a href="/contact" class="hover:text-cyan-400">Contact</a>
     </div>

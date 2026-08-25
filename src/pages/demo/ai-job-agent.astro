@@ -6,7 +6,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   title="Interactive Demo"
   description="A synthetic walkthrough of AI Job Agent — fictional job, fit score, tailored resume, and review queue. No real accounts or applications involved."
 >
-  <main class="bg-grid">
+  <main id="main-content" class="bg-grid">
     <section class="mx-auto max-w-3xl px-6 pb-6 pt-16 sm:pt-20">
       <p class="font-mono-tight text-xs text-cyan-400">Interactive demo</p>
       <h1
@@ -351,8 +351,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         </ul>
         <p id="handoff-status" class="mt-4 text-sm text-paper-400">Filling verifiable fields…</p>
         <div id="confirm-area" class="mt-4 hidden">
-          <p class="text-sm text-paper-300">The browser stays open. Submitting is up to you — this demo never clicks Submit.</p>
-          <button id="confirm-submitted" class="mt-3 rounded-md bg-cyan-500 px-4 py-2 text-sm font-medium text-graphite-950 hover:bg-cyan-400">I confirm I submitted this, in real life</button>
+          <p class="text-sm text-paper-300">In the real app, the browser stays open and the applicant submits it themselves — this demo never clicks Submit, and nothing here is a real application.</p>
+          <button id="confirm-submitted" class="mt-3 rounded-md bg-cyan-500 px-4 py-2 text-sm font-medium text-graphite-950 hover:bg-cyan-400">Simulate applicant confirmation</button>
         </div>
       </div>
     `;
@@ -379,7 +379,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     setStatus("Follow up — waiting for a response.");
     root.innerHTML = `
       <div class="rounded-lg border border-graphite-700 p-6 text-center">
-        <p class="text-paper-100">Application recorded as submitted.</p>
+        <p class="text-paper-100">Simulated: this fictional application is now marked submitted. No real application, account, or service was touched.</p>
         <button id="simulate-time" class="mt-4 rounded-md border border-graphite-600 px-4 py-2 text-sm text-paper-100 hover:border-cyan-500 hover:text-cyan-400">Simulate ${job.outcome.days} days passing</button>
       </div>
     `;
