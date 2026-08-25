@@ -1,0 +1,21 @@
+---
+import { siteConfig } from "../config";
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-graphite-700/80">
+  <div
+    class="mx-auto flex max-w-5xl flex-col gap-4 px-6 py-10 text-sm text-paper-500 sm:flex-row sm:items-center sm:justify-between"
+  >
+    <p>
+      © {year} {siteConfig.author} · Build With AI
+    </p>
+    <div class="flex gap-5">
+      <a href={siteConfig.githubUrl} class="hover:text-cyan-400">GitHub</a>
+      <a href={`mailto:${siteConfig.contactEmail}`} class="hover:text-cyan-400"
+        >Email</a
+      >
+      <a href="/contact" class="hover:text-cyan-400">Contact</a>
+    </div>
+  </div>
+</footer>

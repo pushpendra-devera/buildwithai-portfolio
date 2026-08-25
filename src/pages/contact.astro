@@ -1,0 +1,34 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { siteConfig } from "../config";
+---
+
+<BaseLayout
+  title="Contact"
+  description="Get in touch with Pushpendra Singh — GitHub, email, and LinkedIn."
+>
+  <main class="bg-grid">
+    <section class="mx-auto max-w-2xl px-6 py-16 sm:py-24">
+      <h1 class="text-3xl font-semibold tracking-tight text-paper-50">
+        Contact
+      </h1>
+      <p class="mt-6 text-paper-300">
+        The best way to reach me is email. I read everything that comes in.
+      </p>
+      <div class="mt-8 space-y-3">
+        <a
+          href={`mailto:${siteConfig.contactEmail}`}
+          class="block rounded-md border border-graphite-700 px-4 py-3 text-paper-100 hover:border-cyan-500 hover:text-cyan-400"
+        >
+          {siteConfig.contactEmail}
+        </a>
+        <a
+          href={siteConfig.githubUrl}
+          class="block rounded-md border border-graphite-700 px-4 py-3 text-paper-100 hover:border-cyan-500 hover:text-cyan-400"
+        >
+          GitHub — {siteConfig.githubUrl.replace("https://", "")}
+        </a>
+      </div>
+    </section>
+  </main>
+</BaseLayout>

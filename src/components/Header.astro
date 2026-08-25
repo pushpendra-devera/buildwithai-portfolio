@@ -1,0 +1,27 @@
+---
+import { siteConfig } from "../config";
+---
+
+<header class="border-b border-graphite-700/80">
+  <div
+    class="mx-auto flex max-w-5xl items-center justify-between px-6 py-5"
+  >
+    <a
+      href="/"
+      class="font-mono-tight text-sm font-semibold tracking-tight text-paper-50"
+    >
+      build<span class="text-cyan-400">with</span>ai<span
+        class="text-paper-500">.in</span
+      >
+    </a>
+    <nav class="hidden gap-6 text-sm text-paper-300 sm:flex">
+      {
+        siteConfig.nav.map((item) => (
+          <a href={item.href} class="transition-colors hover:text-cyan-400">
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</header>

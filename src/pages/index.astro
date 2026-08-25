@@ -1,0 +1,63 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { siteConfig } from "../config";
+
+const proofPoints = [
+  "5 ATS form adapters",
+  "Workday discovery",
+  "Naukri assisted handoff",
+  "4 LLM providers",
+  "Local Ollama support",
+  "Human-controlled submission",
+  "Thousands of automated tests",
+];
+---
+
+<BaseLayout title="Home" description={siteConfig.tagline}>
+  <main class="bg-grid">
+    <section class="mx-auto max-w-4xl px-6 pb-16 pt-20 text-center sm:pt-28">
+      <p
+        class="font-mono-tight mb-6 inline-block rounded-full border border-graphite-600 px-3 py-1 text-xs text-cyan-400"
+      >
+        v1.0 beta — built and validated for supervised personal use
+      </p>
+      <h1
+        class="text-4xl font-semibold leading-tight tracking-tight text-paper-50 sm:text-5xl"
+      >
+        Hi, I'm Pushpendra.<br />
+        I build practical AI systems.
+      </h1>
+      <p class="mx-auto mt-6 max-w-2xl text-lg text-paper-300">
+        My flagship project is a local-first AI Job Agent that discovers
+        opportunities, evaluates fit, prepares grounded application material,
+        and assists applications — while keeping the human in control.
+      </p>
+      <div class="mt-9 flex flex-wrap justify-center gap-3">
+        <a
+          href="/projects/ai-job-agent"
+          class="rounded-md bg-cyan-500 px-5 py-2.5 text-sm font-medium text-graphite-950 transition-colors hover:bg-cyan-400"
+        >
+          Explore AI Job Agent
+        </a>
+        <a
+          href="https://github.com/pushpendra-devera/ai-job-agent"
+          class="rounded-md border border-graphite-600 px-5 py-2.5 text-sm font-medium text-paper-100 transition-colors hover:border-cyan-500 hover:text-cyan-400"
+        >
+          View source on GitHub
+        </a>
+      </div>
+    </section>
+
+    <section class="border-t border-graphite-700/80">
+      <div
+        class="mx-auto grid max-w-5xl grid-cols-2 gap-x-6 gap-y-4 px-6 py-10 text-center text-sm text-paper-300 sm:grid-cols-4"
+      >
+        {
+          proofPoints.map((point) => (
+            <div class="font-mono-tight">{point}</div>
+          ))
+        }
+      </div>
+    </section>
+  </main>
+</BaseLayout>
