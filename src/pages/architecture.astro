@@ -1,32 +1,229 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+
+const privacyControls = [
+  {
+    name: "Contact data excluded from model prompts",
+    detail:
+      "Name, email, and phone never enter model context — they don't improve fit analysis and flow straight from the local profile into form fields instead.",
+  },
+  {
+    name: "OS-backed credential storage",
+    detail:
+      "Provider API keys are stored via Electron's safeStorage (macOS Keychain, Windows DPAPI, Linux libsecret). The renderer only ever sees a configured/not-configured flag and a masked suffix — never the key.",
+  },
+  {
+    name: "Session directories are a trust boundary, not a setting",
+    detail:
+      "A persistent browser-profile path is decided by exactly one function in the main process, from the OS user-data directory alone. It is never sent to, or accepted from, the renderer, an environment variable, or a Settings field.",
+  },
+  {
+    name: "Redacted logging, twice over",
+    detail:
+      "A path-based logger denylist redacts sensitive fields; a second, independent sanitizer strips credential-shaped strings, emails, phone numbers, and filesystem paths before anything is written to disk. Diagnostics exports get a third, independent redaction pass.",
+  },
+  {
+    name: "Explicit, manual retention",
+    detail:
+      "Nothing is deleted automatically. A dry-run/confirm purge command removes old artifacts and completed-run checkpoints; the main application database is deliberately kept to prevent duplicate applications.",
+  },
+];
+
+const safetyControls = [
+  "Human review before submission — a durable pause, enabled by default, backed by a checkpoint on disk.",
+  "No automatic submission, ever. ATS adapters have no submit method; a separate, explicit action records that a human submitted.",
+  "Bounded blast radius — a hard cap on applications per run, and a retry limit for failures.",
+  "Destination allowlisting — only absolute HTTPS URLs on approved ATS hosts, validated before navigation and again after redirects settle.",
+  "Per-application browser isolation — a fresh context per application; cookies, storage, and cache are discarded afterward, including on failure paths.",
+  "Fail closed on unknown platforms — an unrecognized ATS hands back to manual application rather than attempting a best-effort fill.",
+  "Post-fill verification — field values are re-read after the form settles, so a write that silently reverted is never reported as filled.",
+  "No CAPTCHA/MFA/anti-bot bypass — no login automation, stealth fingerprinting, or anti-bot evasion exists in the codebase.",
+];
+
+const testingGates = [
+  "Build, typecheck, ESLint, and Prettier formatting",
+  "Backend unit/integration suite",
+  "Desktop unit/component/integration suite",
+  "Electron end-to-end suite (renderer, preload, IPC, main, SQLite integration, hermetic session behavior)",
+  "Axe accessibility checks",
+  "Full-history secret scanning (Gitleaks)",
+  "Packaged-executable smoke test, including first-run migration, on each native OS",
+];
 ---
 
 <BaseLayout
   title="Architecture"
-  description="Engineering and security deep-dive for AI Job Agent — process topology, privacy boundaries, and safety controls."
+  description="Engineering deep-dive for AI Job Agent — process topology, privacy boundaries, and the testing gates behind human-controlled submission."
 >
   <main class="bg-grid">
-    <section class="mx-auto max-w-3xl px-6 py-16 sm:py-24">
-      <h1 class="text-3xl font-semibold tracking-tight text-paper-50">
+    <section class="mx-auto max-w-3xl px-6 pb-6 pt-16 sm:pt-20">
+      <p class="font-mono-tight text-xs text-cyan-400">Engineering deep-dive</p>
+      <h1
+        class="mt-3 text-3xl font-semibold tracking-tight text-paper-50 sm:text-4xl"
+      >
         Architecture
       </h1>
-      <p class="mt-6 text-paper-300">
-        A full engineering deep-dive — process topology, IPC contracts,
-        privacy boundaries, and the state machine behind human-controlled
-        submission — is in progress.
+      <p class="mt-5 text-paper-300">
+        The interesting engineering problem in AI Job Agent was never "can a
+        bot fill out forms." It was building a system with enough process
+        isolation and typed boundaries that a crash, a bad model call, or a
+        stale selector on some ATS's DOM can't cascade into something
+        submitting on the applicant's behalf. This page covers the process
+        topology, the privacy boundaries, and how it's tested.
       </p>
-      <p class="mt-4 text-paper-300">
-        In the meantime, the safety architecture summary lives on the{" "}
-        <a
-          href="/projects/ai-job-agent"
-          class="text-cyan-400 underline underline-offset-2"
-        >AI Job Agent case study</a>, and the full source is on{" "}
-        <a
-          href="https://github.com/pushpendra-devera/ai-job-agent"
-          class="text-cyan-400 underline underline-offset-2"
-        >GitHub</a>.
-      </p>
+    </section>
+
+    <!-- Process topology -->
+    <section class="border-t border-graphite-700/80 py-14">
+      <div class="mx-auto max-w-3xl px-6">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-paper-500">
+          Process topology
+        </h2>
+        <p class="mt-4 text-paper-300">
+          One rule governs everything below: <strong class="text-paper-100"
+            >the Electron main process never imports the backend.</strong
+          > Only worker processes may; everything else reaches the backend by
+          naming a procedure in a typed contract and sending it over IPC. The
+          rule is enforced by a custom ESLint restriction, not convention —
+          because every reason it exists is invisible at the call site.
+        </p>
+        <div
+          class="mt-6 overflow-x-auto rounded-lg border border-graphite-700 bg-graphite-900 p-5 font-mono-tight text-xs leading-relaxed text-paper-300 sm:text-sm"
+        >
+          <pre class="whitespace-pre">main (Electron)          — windows, menus, IPC bridge, CSP. Imports NO backend.
+  ├─ agent host          — long-lived. Every backend call goes through here.
+  ├─ apply worker         — ephemeral, one per application run.
+  ├─ run worker           — ephemeral, one per discover→score→tailor graph run.
+  └─ session workers      — ephemeral, one per assisted browser session.
+<span class="text-cyan-400">renderer</span>                 — React. contextIsolation + sandbox + no nodeIntegration.
+  └─ preload (CJS)       — one narrow bridge: call / hostStatus / onHostStatus.</pre>
+        </div>
+        <p class="mt-4 text-sm text-paper-500">
+          Every capability the app has grown since — a daily unattended scan,
+          job-alert email ingestion, an assisted browser handoff — has been
+          added as one more worker under this same rule, not an exception to
+          it. Adding a capability means adding a procedure to a typed
+          registry: deliberately more friction than adding an import, and the
+          friction is the feature.
+        </p>
+      </div>
+    </section>
+
+    <!-- Why this matters -->
+    <section class="border-t border-graphite-700/80 py-14">
+      <div class="mx-auto max-w-3xl px-6">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-paper-500">
+          Why the boundary exists
+        </h2>
+        <p class="mt-4 text-paper-300">
+          The backend is a CLI at heart: its environment validation throws at
+          <em>import</em> time if a required key is missing, and its database
+          client opens the SQLite file at import too. Both are correct
+          behavior for a CLI — failing loudly at startup beats surfacing
+          <code class="rounded bg-graphite-800 px-1 py-0.5 text-paper-200"
+            >undefined</code
+          > three layers deep, mid-run. But in a desktop app, a first-run user
+          with no API key yet would get a process that dies before a window
+          exists — nowhere to even render the explanation. Routing every
+          backend call through one isolated, dynamically-imported worker with
+          an explicit ready/failed handshake keeps that failure visible
+          instead of fatal.
+        </p>
+      </div>
+    </section>
+
+    <!-- Privacy boundaries -->
+    <section class="border-t border-graphite-700/80 py-14">
+      <div class="mx-auto max-w-3xl px-6">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-paper-500">
+          Privacy boundaries
+        </h2>
+        <div class="mt-6 space-y-4">
+          {
+            privacyControls.map((c) => (
+              <div class="rounded-md border border-graphite-700 p-4">
+                <p class="font-medium text-paper-100">{c.name}</p>
+                <p class="mt-1.5 text-sm text-paper-400">{c.detail}</p>
+              </div>
+            ))
+          }
+        </div>
+        <p class="mt-4 text-sm text-paper-500">
+          Local-first is not the same claim as encrypted-everywhere: the data
+          inventory still depends on device security and retention
+          discipline, and filled-form screenshots are the densest PII
+          artifact the app produces. That tradeoff is documented, not hidden.
+        </p>
+      </div>
+    </section>
+
+    <!-- Safety controls -->
+    <section class="border-t border-graphite-700/80 py-14">
+      <div class="mx-auto max-w-3xl px-6">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-paper-500">
+          Safety controls
+        </h2>
+        <ul class="mt-6 space-y-3">
+          {
+            safetyControls.map((item) => (
+              <li class="flex gap-3 text-paper-300">
+                <span class="mt-1 text-amber-400">▸</span>
+                <span>{item}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    <!-- Testing & release gates -->
+    <section class="border-t border-graphite-700/80 py-14">
+      <div class="mx-auto max-w-3xl px-6">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-paper-500">
+          Testing &amp; release gates
+        </h2>
+        <p class="mt-4 text-paper-300">
+          290+ test files across the backend and desktop packages as of
+          August 2026, run through a pull-request gate that includes:
+        </p>
+        <ul class="mt-4 grid gap-2 sm:grid-cols-2">
+          {
+            testingGates.map((g) => (
+              <li class="rounded-md border border-graphite-700 px-3 py-2 text-sm text-paper-300">
+                {g}
+              </li>
+            ))
+          }
+        </ul>
+        <p class="mt-4 text-sm text-paper-500">
+          Release testing has caught real problems this way — a
+          packaging-only failure from a missing first-run migration
+          entrypoint, a raw-key export path in diagnostics closed by a second
+          independent redaction pass, and a logger stress test that caught
+          catastrophic regex backtracking reachable through untrusted job
+          description text.
+        </p>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="border-t border-graphite-700/80 py-16">
+      <div class="mx-auto max-w-3xl px-6 text-center">
+        <div class="flex flex-wrap justify-center gap-3">
+          <a
+            href="https://github.com/pushpendra-devera/ai-job-agent"
+            class="rounded-md bg-cyan-500 px-5 py-2.5 text-sm font-medium text-graphite-950 transition-colors hover:bg-cyan-400"
+          >
+            View source on GitHub
+          </a>
+          <a
+            href="/changelog"
+            class="rounded-md border border-graphite-600 px-5 py-2.5 text-sm font-medium text-paper-100 transition-colors hover:border-cyan-500 hover:text-cyan-400"
+          >
+            See the changelog
+          </a>
+        </div>
+      </div>
     </section>
   </main>
 </BaseLayout>
