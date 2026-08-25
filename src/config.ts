@@ -10,6 +10,7 @@ export const siteConfig = {
   contactEmail: "pushpendra.devera@gmail.com",
   nav: [
     { label: "AI Job Agent", href: "/projects/ai-job-agent" },
+    { label: "Demo", href: "/demo/ai-job-agent" },
     { label: "Architecture", href: "/architecture" },
     { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },
